@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gal Remec — AI Plan Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0a;--s:#111;--s2:#181818;--b:#222;--b2:#2e2e2e;--red:#e8192c;--rdim:rgba(232,25,44,0.12);--t:#f2f2f2;--m:#777;--l:#aaa;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--t);font-family:'DM Sans',sans-serif;min-height:100vh;}
+.hdr{border-bottom:1px solid var(--b);padding:16px 22px;display:flex;align-items:center;justify-content:space-between;}
+.lg{display:flex;align-items:center;gap:12px;}
+.lm{width:36px;height:36px;border:2px solid var(--red);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue';font-size:14px;color:var(--red);}
+.lt strong{font-family:'Bebas Neue';font-size:16px;letter-spacing:2px;display:block;}
+.lt span{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--red);}
+.bdg{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--m);border:1px solid var(--b2);padding:3px 8px;}
+.hero{text-align:center;padding:36px 20px 28px;}
+.htag{font-size:9px;letter-spacing:4px;text-transform:uppercase;color:var(--red);margin-bottom:12px;display:block;}
+.hero h1{font-family:'Bebas Neue';font-size:clamp(34px,7vw,62px);letter-spacing:3px;line-height:0.95;margin-bottom:12px;}
+.hero h1 em{color:var(--red);font-style:normal;}
+.hero p{color:var(--l);font-size:13px;line-height:1.6;max-width:440px;margin:0 auto;}
+.main{max-width:760px;margin:0 auto;padding:0 16px 60px;}
+.st{font-family:'Bebas Neue';font-size:11px;letter-spacing:4px;color:var(--red);text-transform:uppercase;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--b);}
+.fs{margin-bottom:28px;}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:540px){.fg{grid-template-columns:1fr;}}
+.oc{grid-template-columns:1fr!important;}
+.fi{display:flex;flex-direction:column;gap:5px;}
+.fi label{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--l);}
+.fi label .r{color:var(--red);}
+input[type=text],input[type=number],input[type=password],select,textarea{background:var(--s2);border:1px solid var(--b2);border-radius:3px;color:var(--t);font-family:'DM Sans';font-size:13px;padding:9px 12px;width:100%;outline:none;transition:border-color 0.15s;-webkit-appearance:none;}
+input:focus,select:focus,textarea:focus{border-color:var(--red);}
+input::placeholder,textarea::placeholder{color:var(--m);}
+select{cursor:pointer;}select option{background:#1a1a1a;}
+textarea{resize:vertical;min-height:56px;}
+.rg{display:flex;flex-wrap:wrap;gap:6px;}
+.rp input{display:none;}
+.rp label{display:inline-block;padding:6px 13px;border-radius:3px;border:1px solid var(--b2);font-size:12px;cursor:pointer;color:var(--m);background:var(--s2);transition:all 0.13s;}
+.rp input:checked+label{border-color:var(--red);color:var(--t);background:var(--rdim);}
+.rp label:hover{border-color:#444;color:var(--t);}
+.sbtn{font-family:'Bebas Neue';font-size:17px;letter-spacing:4px;background:var(--red);color:#fff;border:none;padding:14px 42px;cursor:pointer;border-radius:3px;transition:background 0.15s,transform 0.15s;display:block;margin:28px auto 0;}
+.sbtn:hover{background:#c8111f;transform:translateY(-1px);}
+.sbtn:disabled{opacity:0.4;cursor:default;transform:none;}
+.eb{background:rgba(232,25,44,0.08);border:1px solid rgba(232,25,44,0.3);border-radius:3px;padding:12px 16px;margin-bottom:18px;font-size:13px;color:#ff6b7a;display:none;}
+.akbox{background:var(--s);border:1px solid var(--b2);border-left:3px solid var(--red);border-radius:3px;padding:16px 18px;margin-bottom:24px;}
+.akbox .akt{font-family:'Bebas Neue';font-size:11px;letter-spacing:3px;color:var(--red);margin-bottom:8px;}
+.akbox p{font-size:12px;color:var(--m);margin-bottom:10px;line-height:1.5;}
+.akbox a{color:var(--red);}
+
+/* LOADING */
+#ls{display:none;min-height:75vh;align-items:center;justify-content:center;}
+.li{text-align:center;padding:40px 20px;max-width:360px;margin:0 auto;}
+.lic{font-size:44px;margin-bottom:18px;animation:pi 1.5s ease-in-out infinite;}
+@keyframes pi{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+.lmsg{font-family:'Bebas Neue';font-size:19px;letter-spacing:3px;color:var(--t);margin-bottom:20px;min-height:26px;}
+.pw{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.pbg{flex:1;height:4px;background:var(--b2);border-radius:2px;overflow:hidden;}
+.pf{height:100%;width:0%;background:var(--red);border-radius:2px;transition:width 0.25s ease;}
+.pp{font-family:'Bebas Neue';font-size:15px;letter-spacing:2px;color:var(--red);min-width:36px;text-align:right;}
+.lsub{font-size:12px;color:var(--m);min-height:16px;}
+
+/* RESULTS */
+#rs{display:none;}
+.rh{text-align:center;padding:36px 18px 26px;}
+.rh h2{font-family:'Bebas Neue';font-size:clamp(28px,6vw,50px);letter-spacing:3px;line-height:1;margin-bottom:8px;}
+.rh h2 span{color:var(--red);}
+.rh p{color:var(--l);font-size:13px;}
+.pb{background:var(--s);border:1px solid var(--b2);border-left:3px solid var(--red);border-radius:3px;padding:15px 18px;margin-bottom:18px;}
+.pb .pt{font-family:'Bebas Neue';font-size:10px;letter-spacing:3px;color:var(--red);margin-bottom:7px;}
+.pb p{font-size:13px;line-height:1.65;color:var(--l);}
+.gn{background:var(--rdim);border:1px solid rgba(232,25,44,0.2);border-radius:3px;padding:11px 15px;margin:9px 0 15px;font-size:13px;color:var(--l);font-style:italic;line-height:1.55;}
+.dv{height:1px;background:var(--b);margin:24px 0;}
+.mc{background:var(--s);border:1px solid var(--b2);border-radius:5px;margin-bottom:12px;overflow:hidden;}
+.mch{background:var(--s2);border-bottom:1px solid var(--b2);padding:9px 15px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;}
+.mch h3{font-family:'Bebas Neue';font-size:14px;letter-spacing:2px;color:var(--t);margin:0;}
+.mtt{display:flex;gap:7px;}
+.pl{font-size:10px;font-weight:600;padding:2px 8px;border-radius:2px;}
+.pl.k{background:rgba(232,25,44,0.15);color:var(--red);border:1px solid rgba(232,25,44,0.3);}
+.pl.p{background:rgba(255,255,255,0.05);color:#ccc;border:1px solid var(--b2);}
+.mrs{padding:0 15px 7px;}
+.mr{display:grid;grid-template-columns:1fr auto auto;gap:9px;align-items:start;padding:7px 0;border-bottom:1px solid var(--b);}
+.mr:last-child{border-bottom:none;}
+.mn{font-weight:600;font-size:12px;color:var(--t);}
+.mf{font-size:11px;color:var(--m);margin-top:2px;}
+.mm{font-size:11px;font-weight:600;text-align:right;white-space:nowrap;}
+.mm .k{color:var(--red);}
+.mm .p{color:var(--l);font-weight:400;}
+.tb{background:var(--s);border:1px solid var(--b2);border-radius:5px;margin-bottom:11px;overflow:hidden;}
+.th{background:var(--s2);border-bottom:1px solid var(--b2);padding:9px 15px;display:flex;align-items:center;gap:9px;}
+.db{background:var(--red);color:#fff;font-family:'Bebas Neue';font-size:11px;letter-spacing:2px;padding:2px 8px;border-radius:2px;}
+.df{font-weight:600;font-size:12px;color:var(--t);}
+.tes{padding:7px 15px 11px;}
+.er{display:grid;grid-template-columns:1fr auto;align-items:center;padding:6px 0;border-bottom:1px solid var(--b);gap:11px;}
+.er:last-child{border-bottom:none;}
+.en{font-size:12px;font-weight:500;color:var(--t);}
+.ent{font-size:10px;color:var(--m);margin-top:2px;}
+.es{font-size:11px;font-weight:700;color:var(--red);white-space:nowrap;}
+.sb{background:var(--s);border:1px solid var(--b2);border-radius:5px;padding:12px 16px;}
+.si{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--b);gap:11px;flex-wrap:wrap;}
+.si:last-child{border-bottom:none;}
+.sn{font-size:12px;font-weight:600;color:var(--t);}
+.sd{font-size:10px;color:var(--m);}
+.sdose{font-size:11px;font-weight:600;color:var(--red);}
+.rb{font-family:'Bebas Neue';font-size:13px;letter-spacing:3px;background:transparent;color:var(--m);border:1px solid var(--b2);padding:9px 22px;cursor:pointer;border-radius:3px;transition:all 0.15s;display:block;margin:32px auto 0;}
+.rb:hover{color:var(--t);border-color:#444;}
+.ftr{border-top:1px solid var(--b);padding:18px;text-align:center;font-size:10px;color:var(--m);letter-spacing:1px;}
+.ftr span{color:var(--red);}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="lg">
+    <div class="lm">GR</div>
+    <div class="lt"><strong>Gal Remec Coaching</strong><span>Strength and Honor</span></div>
+  </div>
+  <div class="bdg">AI Plan Generator</div>
+</div>
+
+<!-- FORM -->
+<div id="fv">
+  <div class="hero">
+    <span class="htag">Personaliziran program</span>
+    <h1>TVOJ <em>CUSTOM</em><br>PLAN</h1>
+    <p>Odgovori na spodnja vprašanja — AI bo sestavil 4 jedilnike s kalorijami in beljakovinami ter trening plan, 100% prilagojen tebi.</p>
+  </div>
+  <div class="main">
+    <div id="eb" class="eb"></div>
+
+    <!-- API KEY je vgrajen -->
+
+    <!-- 01 -->
+    <div class="fs"><div class="st">01 — Osnovni podatki</div>
+      <div class="fg">
+        <div class="fi"><label>Starost<span class="r">*</span></label><input type="number" id="age" placeholder="npr. 25" min="14" max="80"></div>
+        <div class="fi"><label>Spol<span class="r">*</span></label><div class="rg">
+          <div class="rp"><input type="radio" name="gender" id="gM" value="moški"><label for="gM">Moški</label></div>
+          <div class="rp"><input type="radio" name="gender" id="gF" value="ženska"><label for="gF">Ženska</label></div>
+        </div></div>
+        <div class="fi"><label>Teža (kg)<span class="r">*</span></label><input type="number" id="weight" placeholder="npr. 78" step="0.5"></div>
+        <div class="fi"><label>Višina (cm)<span class="r">*</span></label><input type="number" id="height" placeholder="npr. 180"></div>
+      </div>
+    </div>
+
+    <!-- 02 -->
+    <div class="fs"><div class="st">02 — Zdravje & omejitve</div>
+      <div class="fg oc">
+        <div class="fi"><label>Poškodbe, alergije, bolezni</label>
+          <textarea id="injuries" placeholder="npr. poškodba kolena, alergija na mleko... Če nič, pusti prazno."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- 03 -->
+    <div class="fs"><div class="st">03 — Aktivnost</div>
+      <div class="fg">
+        <div class="fi"><label>Koraki dnevno<span class="r">*</span></label>
+          <select id="steps">
+            <option value="" disabled selected>Izberi...</option>
+            <option value="manj kot 5.000">Manj kot 5.000 (sedentaren)</option>
+            <option value="5.000–8.000">5.000–8.000 (zmerno aktiven)</option>
+            <option value="8.000–12.000">8.000–12.000 (aktiven)</option>
+            <option value="več kot 12.000">Več kot 12.000 (zelo aktiven)</option>
+          </select>
+        </div>
+        <div class="fi"><label>Fizično delo?</label><div class="rg">
+          <div class="rp"><input type="radio" name="pw" id="pwY" value="da"><label for="pwY">Da</label></div>
+          <div class="rp"><input type="radio" name="pw" id="pwN" value="ne"><label for="pwN">Ne</label></div>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- 04 -->
+    <div class="fs"><div class="st">04 — Trening</div>
+      <div class="fg">
+        <div class="fi"><label>Kje želiš trenirati?<span class="r">*</span></label><div class="rg">
+          <div class="rp"><input type="radio" name="tl" id="tlG" value="gym"><label for="tlG">🏋️ Gym</label></div>
+          <div class="rp"><input type="radio" name="tl" id="tlH" value="doma"><label for="tlH">🏠 Doma</label></div>
+          <div class="rp"><input type="radio" name="tl" id="tlC" value="calisthenics"><label for="tlC">🌳 Calisthenics</label></div>
+        </div></div>
+        <div class="fi"><label>Oprema doma</label><input type="text" id="eq" placeholder="npr. kettlebell, elastike, nič..."></div>
+        <div class="fi"><label>Kolikokrat na teden?<span class="r">*</span></label><div class="rg">
+          <div class="rp"><input type="radio" name="tf" id="tf2" value="2"><label for="tf2">2×</label></div>
+          <div class="rp"><input type="radio" name="tf" id="tf3" value="3"><label for="tf3">3×</label></div>
+          <div class="rp"><input type="radio" name="tf" id="tf4" value="4"><label for="tf4">4×</label></div>
+          <div class="rp"><input type="radio" name="tf" id="tf5" value="5"><label for="tf5">5×</label></div>
+        </div></div>
+        <div class="fi"><label>Izkušnje<span class="r">*</span></label>
+          <select id="exp">
+            <option value="" disabled selected>Izberi...</option>
+            <option value="začetnik">Začetnik (&lt;1 leto)</option>
+            <option value="srednji">Srednji (1–3 leta)</option>
+            <option value="napreden">Napreden (3+ leta)</option>
+          </select>
+        </div>
+        <div class="fi"><label>Vaje ki jih ne maraš</label><input type="text" id="disEx" placeholder="npr. počepi, tek..."></div>
+      </div>
+    </div>
+
+    <!-- 05 -->
+    <div class="fs"><div class="st">05 — Cilji & prehrana</div>
+      <div class="fg">
+        <div class="fi"><label>Cilj<span class="r">*</span></label><div class="rg">
+          <div class="rp"><input type="radio" name="goal" id="gD" value="hujšanje"><label for="gD">🔥 Hujšanje</label></div>
+          <div class="rp"><input type="radio" name="goal" id="gB" value="lean bulk"><label for="gB">💪 Lean bulk</label></div>
+          <div class="rp"><input type="radio" name="goal" id="gR" value="rekomp"><label for="gR">⚖️ Rekomp</label></div>
+        </div></div>
+        <div class="fi"><label>Obroki na dan<span class="r">*</span></label><div class="rg">
+          <div class="rp"><input type="radio" name="meals" id="m2" value="2"><label for="m2">2</label></div>
+          <div class="rp"><input type="radio" name="meals" id="m3" value="3"><label for="m3">3</label></div>
+          <div class="rp"><input type="radio" name="meals" id="m4" value="4"><label for="m4">4</label></div>
+          <div class="rp"><input type="radio" name="meals" id="m5" value="5"><label for="m5">5</label></div>
+        </div></div>
+        <div class="fi"><label>Hrana ki je ne maraš</label>
+          <textarea id="disFood" placeholder="npr. brokoli, tuna, skyr..."></textarea>
+        </div>
+        <div class="fi"><label>Prehranske omejitve</label><div class="rg">
+          <div class="rp"><input type="radio" name="diet" id="dN" value="brez" checked><label for="dN">Brez</label></div>
+          <div class="rp"><input type="radio" name="diet" id="dV" value="vegetarijanec"><label for="dV">Vegetarijanec</label></div>
+          <div class="rp"><input type="radio" name="diet" id="dVe" value="vegan"><label for="dVe">Vegan</label></div>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- 06 -->
+    <div class="fs"><div class="st">06 — Suplementi</div>
+      <div class="fg oc">
+        <div class="fi"><label>Kreatin?</label><div class="rg">
+          <div class="rp"><input type="radio" name="cr" id="crY" value="da"><label for="crY">Da</label></div>
+          <div class="rp"><input type="radio" name="cr" id="crN" value="ne"><label for="crN">Ne</label></div>
+          <div class="rp"><input type="radio" name="cr" id="crM" value="razmišljam"><label for="crM">Razmišljam</label></div>
+        </div></div>
+        <div class="fi"><label>Whey protein?</label><div class="rg">
+          <div class="rp"><input type="radio" name="wh" id="wY" value="da"><label for="wY">Da</label></div>
+          <div class="rp"><input type="radio" name="wh" id="wN" value="ne"><label for="wN">Ne</label></div>
+        </div></div>
+        <div class="fi"><label>Ostali suplementi</label><input type="text" id="supps" placeholder="npr. D3, omega-3, magnezij..."></div>
+      </div>
+    </div>
+
+    <!-- 07 -->
+    <div class="fs"><div class="st">07 — Karkoli drugega</div>
+      <div class="fg oc">
+        <div class="fi"><label>Dodatne info</label>
+          <textarea id="extra" placeholder="npr. delam do 17h, rad jem večje obroke zvečer..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <button class="sbtn" id="btn" onclick="go()">GENERIRAJ MÔJ PLAN</button>
+  </div>
+</div>
+
+<!-- LOADING -->
+<div id="ls" style="display:none;min-height:75vh;align-items:center;justify-content:center;">
+  <div class="li">
+    <div class="lic">💪🏻</div>
+    <div class="lmsg" id="lmsg">Analiziram podatke...</div>
+    <div class="pw"><div class="pbg"><div class="pf" id="pf"></div></div><div class="pp" id="pp">0%</div></div>
+    <div class="lsub" id="lsub">Izračunavam TDEE...</div>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div id="rs" style="display:none;">
+  <div class="main"><div id="rc"></div><button class="rb" onclick="reset()">← Nazaj na vprašalnik</button></div>
+</div>
+
+<div class="ftr">© Gal Remec Coaching · <span>Strength and Honor</span> · galremec.com · 2026</div>
+
+<script>
+// ⬇️ API ključ je na serverju (Netlify env variable) — tukaj ni potreben
+const gv=id=>{const e=document.getElementById(id);return e?e.value.trim():''};
+const gr=n=>{const e=document.querySelector('input[name="'+n+'"]:checked');return e?e.value:''};
+const eb=document.getElementById('eb');
+
+function showErr(msg){eb.style.display='block';eb.textContent=msg;eb.scrollIntoView({behavior:'smooth',block:'center'});}
+
+function validate(){
+  return [
+    {v:gv('age'),n:'Starost'},{v:gr('gender'),n:'Spol'},{v:gv('weight'),n:'Teža'},{v:gv('height'),n:'Višina'},
+    {v:gv('steps'),n:'Koraki'},{v:gr('tl'),n:'Lokacija'},{v:gr('tf'),n:'Frekvenca'},
+    {v:gv('exp'),n:'Izkušnje'},{v:gr('goal'),n:'Cilj'},{v:gr('meals'),n:'Obroki'}
+  ].filter(x=>!x.v).map(x=>x.n);
+}
+
+async function go(){
+  const miss=validate();
+  if(miss.length){showErr('Prosim izpolni: '+miss.join(', '));return;}
+  eb.style.display='none';
+
+  const d={
+    age:gv('age'),gender:gr('gender'),weight:gv('weight'),height:gv('height'),
+    injuries:gv('injuries')||'brez',steps:gv('steps'),pw:gr('pw')||'ne',
+    loc:gr('tl'),eq:gv('eq')||'ni',freq:gr('tf'),exp:gv('exp'),
+    disEx:gv('disEx')||'brez',goal:gr('goal'),meals:gr('meals'),
+    disFood:gv('disFood')||'brez',diet:gr('diet'),
+    cr:gr('cr')||'ne',wh:gr('wh')||'ne',
+    supps:gv('supps')||'brez',extra:gv('extra')||'brez'
+  };
+
+  document.getElementById('fv').style.display='none';
+  document.getElementById('ls').style.display='flex';
+  document.getElementById('btn').disabled=true;
+
+  const steps=[
+    {f:0,m:'Analiziram podatke...',s:'Starost, teža, višina, cilj'},
+    {f:10,m:'Izračunavam TDEE...',s:'BMR × aktivnostni faktor'},
+    {f:22,m:'Sestavljam jedilnik A...',s:'Prilagajam na preference'},
+    {f:38,m:'Sestavljam jedilnike B, C, D...',s:'Variante z enakimi makri'},
+    {f:54,m:'Gradim trening plan...',s:d.loc+', '+d.freq+'× teden'},
+    {f:70,m:'Izbiram vaje...',s:'Upoštevam izkušnje in poškodbe'},
+    {f:84,m:'Dodajam suplemente...',s:'Na podlagi tvojih ciljev'},
+    {f:93,m:'Zadnje prilagoditve...',s:'Preverjam makre'}
+  ];
+  let pct=0,lf=-1;
+  const t0=Date.now();
+  const iv=setInterval(()=>{
+    const el=(Date.now()-t0)/1000;
+    const tgt=Math.min(90,91*(1-Math.exp(-el/20)));
+    if(tgt>pct){pct=tgt;document.getElementById('pf').style.width=pct+'%';document.getElementById('pp').textContent=Math.round(pct)+'%';}
+    for(let i=steps.length-1;i>=0;i--){if(pct>=steps[i].f&&steps[i].f!==lf){lf=steps[i].f;document.getElementById('lmsg').textContent=steps[i].m;document.getElementById('lsub').textContent=steps[i].s;break;}}
+  },120);
+
+  function stopLoading(){clearInterval(iv);}
+  function failWithError(msg){
+    stopLoading();
+    document.getElementById('ls').style.display='none';
+    document.getElementById('fv').style.display='block';
+    document.getElementById('btn').disabled=false;
+    showErr('⚠️ '+msg);
+  }
+
+  try {
+    const res = await fetch('/api/generate', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(d)
+    });
+
+    const rawText = await res.text();
+    if(!res.ok){ failWithError('Server napaka '+res.status+': '+rawText.slice(0,200)); return; }
+
+    let plan;
+    try { plan = JSON.parse(rawText); }
+    catch(e){ failWithError('Parse napaka: '+rawText.slice(0,200)); return; }
+
+    if(plan.error){ failWithError(plan.error); return; }
+
+    stopLoading();
+    document.getElementById('pf').style.width='100%';
+    document.getElementById('pp').textContent='100%';
+    document.getElementById('lmsg').textContent='Plan je pripravljen! 🔥';
+    document.getElementById('lsub').textContent='';
+    await new Promise(r=>setTimeout(r,500));
+    render(plan);
+
+  } catch(err) {
+    failWithError('Napaka: '+err.message);
+  }
+}
+
+function render(p){
+  document.getElementById('ls').style.display='none';
+  const meals=p.meal_plans||[],tr=p.training_plan||{},supps=p.supplements||[];
+  let h=`<div class="rh"><span class="htag">Tvoj personaliziran program</span><h2>READY TO <span>GO</span> 💪🏻</h2>
+  <p>TDEE: ~${p.tdee} kcal &nbsp;·&nbsp; Cilj: <strong>${p.target_kcal} kcal</strong> &nbsp;·&nbsp; Proteini: <strong>${p.target_protein}g/dan</strong></p></div>
+  <div class="pb"><div class="pt">🎯 NA KAJ SEM SE PRILAGODIL</div><p>${x(p.personalization||'')}</p></div>
+  ${p.gal_note?`<div class="gn">"${x(p.gal_note)}"</div>`:''}
+  <div class="dv"></div><div class="st">JEDILNIKI (4 VARIANTE)</div>
+  <p style="font-size:11px;color:var(--m);margin-bottom:15px;">Menjuj med jedilniki — vsi so kalično in proteinsko usklajeni.</p>`;
+
+  meals.forEach(mp=>{
+    h+=`<div class="mc"><div class="mch"><h3>${x(mp.name)}</h3><div class="mtt"><span class="pl k">${mp.total_kcal} kcal</span><span class="pl p">${mp.total_protein}g</span></div></div><div class="mrs">`;
+    (mp.meals||[]).forEach((m,i)=>{h+=`<div class="mr"><div><div class="mn">${x(m.name)}</div><div class="mf">${x(m.foods)}</div></div><div class="mm"><span class="k">${m.kcal} kcal</span></div><div class="mm"><span class="p">${m.protein}g B</span></div></div>`;});
+    h+=`</div></div>`;
+  });
+
+  h+=`<div class="dv"></div><div class="st">TRENING PLAN</div><div class="gn">"${x(tr.overview||'')}"</div>`;
+  (tr.days||[]).forEach(d=>{
+    h+=`<div class="tb"><div class="th"><span class="db">${x(d.day)}</span><span class="df">${x(d.focus)}</span></div><div class="tes">`;
+    (d.exercises||[]).forEach(e=>{h+=`<div class="er"><div><div class="en">${x(e.name)}</div>${e.note?`<div class="ent">${x(e.note)}</div>`:''}</div><div class="es">${x(e.sets_reps)}</div></div>`;});
+    h+=`</div></div>`;
+  });
+  if(tr.cardio_note)h+=`<p style="font-size:12px;color:var(--l);line-height:1.6;margin-top:11px;">${x(tr.cardio_note)}</p>`;
+
+  if(supps.length){
+    h+=`<div class="dv"></div><div class="st">SUPLEMENTI</div><div class="sb">`;
+    supps.forEach(s=>{h+=`<div class="si"><div><div class="sn">${x(s.name)}</div><div class="sd">${x(s.timing||'')}</div></div><div style="text-align:right"><div class="sdose">${x(s.dose)}</div>${s.priority?`<div style="font-size:9px;color:var(--m)">${x(s.priority)}</div>`:''}</div></div>`;});
+    h+=`</div>`;
+  }
+
+  h+=`<div class="dv"></div><div class="pb" style="border-left-color:#333;"><div class="pt" style="color:var(--m);">⚠️ OPOMBA</div><p style="font-size:12px;">Ta plan je informativne narave. Za coaching z tedenskimi check-ini → <strong style="color:var(--t);">@galremec</strong></p></div>`;
+  document.getElementById('rc').innerHTML=h;
+  document.getElementById('rs').style.display='block';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function x(s){if(!s)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');}
+
+function reset(){
+  document.getElementById('rs').style.display='none';
+  document.getElementById('fv').style.display='block';
+  document.getElementById('btn').disabled=false;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>
